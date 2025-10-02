@@ -1,19 +1,12 @@
 # Dependencies
 /node_modules
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Build artifacts
-# These folders contain compiled code and should not be committed
-/dist
-/build
-/out
-/public/build # Common for CRA/Vite
+/backend/node_modules  <-- REQUIRED FIX
 
 # Environment variables
 .env
-.env.local
-.DS_Store
+/backend/.env          <-- REQUIRED FIX
+
+# Build artifacts
+/dist
+/build
+/out
