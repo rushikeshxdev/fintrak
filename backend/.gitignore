@@ -1,0 +1,12 @@
+# Dependencies
+/node_modules
+/backend/node_modules  <-- REQUIRED FIX
+
+# Environment variables
+.env
+/backend/.env          <-- REQUIRED FIX
+
+# Build artifacts
+/dist
+/build
+/out
