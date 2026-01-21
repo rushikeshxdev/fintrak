@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "vercel-build": "vite build",
     "tailwind-init": "node ./node_modules/tailwindcss/dist/cli.js init -p",
     "lint": "eslint .",
     "preview": "vite preview"
