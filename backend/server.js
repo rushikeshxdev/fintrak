@@ -24,11 +24,16 @@ const analyticsRoutes = require('./routes/analytics'); // CRITICAL: Import Analy
 // --- DATABASE CONNECTION LOGIC ---
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
+        await mongoose.connect(process.env.MONGO_URI, {
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+            socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+        });
         console.log('MongoDB Connected successfully!');
     } catch (err) {
         console.error('MongoDB connection error:', err.message);
-        process.exit(1);
+        console.log('Starting server without database connection...');
+        console.log('Some features may not work properly.');
+        // Don't exit, continue without database
     }
 };
 
@@ -47,5 +52,15 @@ app.get('/', (req, res) => {
 
 // --- SERVER STARTUP ---
 connectDB().then(() => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log(`Frontend should connect to: http://localhost:${PORT}/api`);
+    });
+}).catch(() => {
+    // Start server even if DB connection fails
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT} (WITHOUT DATABASE)`);
+        console.log(`Frontend should connect to: http://localhost:${PORT}/api`);
+        console.log('⚠️  Database connection failed - some features may not work');
+    });
 });

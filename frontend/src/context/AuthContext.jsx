@@ -9,8 +9,19 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      setUser(userData);
+      try {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        // Validate that we have proper user data
+        if (userData && userData._id && userData.email) {
+          setUser(userData);
+        } else {
+          // Clear invalid auth data
+          logout();
+        }
+      } catch (error) {
+        // Clear corrupted auth data
+        logout();
+      }
     }
   }, [token]);
 

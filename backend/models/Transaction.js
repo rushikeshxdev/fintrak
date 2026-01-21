@@ -23,10 +23,11 @@ const TransactionSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        // Predefined categories for cleaner analytics
+        // Updated categories to match frontend constants
         enum: [
-            'Salary', 'Investment', 'Housing', 'Food', 'Transport', 
-            'Utilities', 'Entertainment', 'Healthcare', 'Other'
+            'Salary', 'Freelance', 'Investment', 'Business',
+            'Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 
+            'Healthcare', 'Education', 'Other'
         ]
     },
     date: {

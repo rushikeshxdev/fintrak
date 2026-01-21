@@ -3,6 +3,8 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs'); // For password hashing
 const jwt = require('jsonwebtoken'); // For token generation
+const mongoose = require('mongoose');
+const { tempUsers } = require('../utils/tempStorage');
 
 // Helper function to generate JWT
 const generateToken = (id) => {
@@ -10,6 +12,11 @@ const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '30d', // Token expires in 30 days
     });
+};
+
+// Check if database is connected
+const isDatabaseConnected = () => {
+    return mongoose.connection.readyState === 1;
 };
 
 // --- REGISTER USER LOGIC ---
@@ -23,6 +30,40 @@ const registerUser = async (req, res) => {
     }
 
     try {
+        // Check if database is connected
+        if (!isDatabaseConnected()) {
+            console.log('Database not connected, using temporary storage');
+            
+            // Check if user already exists in temp storage
+            const existingUser = tempUsers.find(u => u.email === email);
+            if (existingUser) {
+                return res.status(400).json({ message: 'User already exists' });
+            }
+
+            // Hash password
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+
+            // Create temp user
+            const tempUser = {
+                _id: Date.now().toString(), // Simple ID generation
+                firstName: firstName || 'User',
+                email,
+                password: hashedPassword
+            };
+
+            tempUsers.push(tempUser);
+
+            // Respond with Token
+            return res.status(201).json({
+                _id: tempUser._id,
+                firstName: tempUser.firstName,
+                email: tempUser.email,
+                token: generateToken(tempUser._id),
+            });
+        }
+
+        // Original database logic
         // 1. Check if user already exists
         let user = await User.findOne({ email });
         if (user) {
@@ -65,6 +106,28 @@ const loginUser = async (req, res) => {
     }
 
     try {
+        // Check if database is connected
+        if (!isDatabaseConnected()) {
+            console.log('Database not connected, using temporary storage');
+            
+            // Find user in temp storage
+            const user = tempUsers.find(u => u.email === email);
+            
+            if (user && (await bcrypt.compare(password, user.password))) {
+                // Valid credentials
+                return res.json({
+                    _id: user._id,
+                    firstName: user.firstName,
+                    email: user.email,
+                    token: generateToken(user._id),
+                });
+            } else {
+                // Invalid credentials
+                return res.status(401).json({ message: 'Invalid email or password' });
+            }
+        }
+
+        // Original database logic
         // 1. Find user by email
         const user = await User.findOne({ email });
 
